@@ -56,6 +56,94 @@ You can customise API to:
 -   Run on different port.
 -   Disable search engine if you do not need it, reducing memory usage.
 
+## Working with Custom Icons
+
+This API supports custom icon sets in addition to the standard Iconify collections. The custom icons are managed through the `icons` directory and processed using the included import script.
+
+### Adding New Icons
+
+To add new icons to your custom icon set:
+
+1. **Place SVG files** in the `icons/fortis-icons/` directory (or create a new directory for a different icon set)
+2. **Run the import script** to process and generate the icon set:
+   ```bash
+   node import-fortis.js
+   ```
+3. **Restart the API server** to load the updated icons:
+   ```bash
+   npm run start
+   ```
+
+### Icon Processing
+
+The `import-fortis.js` script automatically:
+
+- **Validates** SVG files and removes invalid ones
+- **Cleans up** SVG code and removes unnecessary elements
+- **Optimizes** icons using SVGO
+- **Converts colors** to `currentColor` for theme compatibility
+- **Generates** the final `fortis-icons.json` file
+
+### Using Custom Icons
+
+Once processed, your custom icons can be used just like any Iconify icon:
+
+#### Via API endpoints:
+- **Get icon data**: `GET /icons?icons=fortis-icons:logo`
+- **Get SVG**: `GET /svg/fortis-icons:logo.svg`
+- **Search icons**: `GET /search?query=logo&prefix=fortis-icons`
+
+#### In your applications:
+```html
+<!-- Using Iconify web component -->
+<iconify-icon icon="fortis-icons:logo"></iconify-icon>
+
+<!-- Direct SVG link -->
+<img src="http://localhost:3000/svg/fortis-icons:logo.svg" alt="Logo">
+```
+
+#### With Iconify libraries:
+```javascript
+// React/Vue/Svelte
+import { Icon } from '@iconify/react';
+<Icon icon="fortis-icons:logo" />
+```
+
+### Creating New Icon Sets
+
+To create a completely new icon set:
+
+1. **Create a new directory** under `icons/` (e.g., `icons/my-icons/`)
+2. **Add SVG files** to this directory
+3. **Modify `import-fortis.js`** or create a new import script:
+   ```javascript
+   const iconSet = await importDirectory('./icons/my-icons', {
+       prefix: 'my-icons', // This will be your icon set prefix
+   });
+   ```
+4. **Update the output path** in the script:
+   ```javascript
+   fs.writeFileSync('./icons/my-icons.json', /* ... */);
+   ```
+5. **Run the import script** and restart the server
+
+### Icon Set Structure
+
+Custom icon sets are stored in IconifyJSON format in the `icons` directory. Each icon set:
+
+- Must have a **unique prefix** (e.g., `fortis-icons`)
+- Filename must **match the prefix** (e.g., `fortis-icons.json`)
+- Can include **metadata** like author, license, and description
+- Will **override** official Iconify sets with the same prefix
+
+### Tips for Icon Management
+
+- **SVG Quality**: Ensure your SVG files are clean and optimized before importing
+- **Naming**: Use consistent, descriptive names for your icon files
+- **Testing**: Always test icons after import by accessing them via the API
+- **Version Control**: Commit both the source SVG files and generated JSON files
+- **Automation**: Consider adding the import script to your build process
+
 ## Port and HTTPS
 
 It is recommended that you do not run API on port 80. Server can handle pretty much anything, but it is still not as good as a dedicated solution such as nginx.
