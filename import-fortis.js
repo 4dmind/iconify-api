@@ -25,10 +25,22 @@ import fs from 'fs';
 			// 1. Initial cleanup
 			cleanupSVG(svg);
 
-			// 2. Serialize for inspection
+			// 2. Add 10% padding to the SVG
+			const viewBox = svg.viewBox;
+			if (viewBox) {
+				const padding = Math.max(viewBox.width, viewBox.height) * 0.1;
+				svg.viewBox = {
+					left: viewBox.left - padding,
+					top: viewBox.top - padding,
+					width: viewBox.width + (padding * 2),
+					height: viewBox.height + (padding * 2)
+				};
+			}
+
+			// 3. Serialize for inspection
 			const svgString = svg.toString();
 
-			// 3. Regex to find all flat fill colors
+			// 4. Regex to find all flat fill colors
 			const fillRegex = /fill="(#[0-9A-Fa-f]{3,6})"/g;
 			let match;
 			const fills = new Set();
@@ -36,7 +48,7 @@ import fs from 'fs';
 				fills.add(match[1].toLowerCase());
 			}
 
-			// 4. Skip color parsing if gradient or multi-color flat palette
+			// 5. Skip color parsing if gradient or multi-color flat palette
 			if (
 				svgString.includes('<linearGradient') ||   // detect gradients  [oai_citation_attribution:9‡developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes?utm_source=chatgpt.com)
 				fills.size > 2                             // detect custom flat palettes  [oai_citation_attribution:10‡developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set?utm_source=chatgpt.com)
@@ -51,7 +63,7 @@ import fs from 'fs';
 				});
 			}
 
-			// 5. Optimize while preserving gradients/defs
+			// 6. Optimize while preserving gradients/defs
 			runSVGO(svg, {
 				plugins: [
 					'preset-default',
